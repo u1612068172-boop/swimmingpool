@@ -7,6 +7,30 @@ const updateNav = () => {
 window.addEventListener('scroll', updateNav, { passive: true });
 updateNav();
 
+// ===== Mobile hamburger menu =====
+const navToggle = document.getElementById('navToggle');
+const navLinks  = document.getElementById('navLinks');
+if (navToggle && navLinks) {
+    const setOpen = (open) => {
+        document.body.classList.toggle('menu-open', open);
+        navToggle.setAttribute('aria-expanded', String(open));
+    };
+    navToggle.addEventListener('click', () => {
+        setOpen(!document.body.classList.contains('menu-open'));
+    });
+    navLinks.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', () => setOpen(false));
+    });
+    // Close on Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') setOpen(false);
+    });
+    // Close if resized back to desktop
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 760) setOpen(false);
+    });
+}
+
 // ===== Reveal-on-scroll =====
 const revealEls = document.querySelectorAll('.section, .card, .gallery-item, .stat');
 const io = new IntersectionObserver((entries) => {
