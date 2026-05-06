@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Inter:wght@300;400;500;600;700&family=Caveat:wght@600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body>
 
@@ -403,14 +404,11 @@
                     <select name="time" required>
                         <option value="">Choose...</option>
                         <option>10:00 AM – 11:00 AM</option>
-                        <option>11:00 AM – 12:00 PM</option>
-                        <option>12:00 PM – 01:00 PM</option>
+                        <option>11:30 AM – 12:30 PM</option>
                         <option>01:00 PM – 02:00 PM</option>
-                        <option>02:00 PM – 03:00 PM</option>
-                        <option>03:00 PM – 04:00 PM</option>
+                        <option>02:30 PM – 03:30 PM</option>
                         <option>04:00 PM – 05:00 PM</option>
-                        <option>05:00 PM – 06:00 PM</option>
-                        <option>06:00 PM – 07:00 PM</option>
+                        <option>05:30 PM – 06:30 PM</option>
                         <option>07:00 PM – 08:00 PM</option>
                         <option>08:00 PM – 09:00 PM</option>
                     </select>
@@ -444,7 +442,7 @@
             </div>
 
             <button type="submit" class="btn btn-primary btn-lg btn-block">
-                <span class="btn-label">Send Reservation Request</span>
+                <span class="btn-label">Reserve & Pay Securely</span>
                 <span class="btn-spinner" aria-hidden="true"></span>
             </button>
             <p class="form-msg" id="formMsg" role="status"></p>

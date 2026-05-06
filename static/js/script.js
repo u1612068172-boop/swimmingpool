@@ -183,6 +183,35 @@ function animateConfetti() {
 const form = document.getElementById('reserveForm');
 const msg  = document.getElementById('formMsg');
 
+async function verifyPayment(response, msg) {
+    try {
+        const verify = await fetch('/reserve/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id:   response.razorpay_order_id,
+                razorpay_signature:  response.razorpay_signature,
+            }),
+        });
+        const v = await verify.json();
+        if (verify.ok && v.ok) {
+            msg.textContent = v.message || 'Payment successful! Reservation confirmed.';
+            msg.classList.remove('error');
+            msg.classList.add('success');
+            fireConfetti();
+            form.reset();
+            updatePrice();
+        } else {
+            msg.textContent = v.error || 'Payment received but verification failed. Please contact us.';
+            msg.classList.add('error');
+        }
+    } catch (err) {
+        msg.textContent = 'Payment verification network error. Please contact us with your payment ID.';
+        msg.classList.add('error');
+    }
+}
+
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
     msg.textContent = '';
@@ -195,6 +224,11 @@ form.addEventListener('submit', async (e) => {
         msg.classList.add('error');
         return;
     }
+    if (typeof Razorpay === 'undefined') {
+        msg.textContent = 'Payment service unavailable. Check your internet and try again.';
+        msg.classList.add('error');
+        return;
+    }
 
     form.classList.add('loading');
     const btn = form.querySelector('button[type=submit]');
@@ -204,19 +238,40 @@ form.addEventListener('submit', async (e) => {
         const res = await fetch('/reserve', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify(data),
         });
         const out = await res.json();
-        if (res.ok && out.ok) {
-            msg.textContent = out.message || 'Thanks! Your reservation request has been sent.';
-            msg.classList.add('success');
-            fireConfetti();
-            form.reset();
-            updatePrice();
-        } else {
-            msg.textContent = out.error || 'Something went wrong. Please try again.';
+        if (!res.ok || !out.ok) {
+            msg.textContent = out.error || 'Could not start payment. Please try again.';
             msg.classList.add('error');
+            return;
         }
+
+        const options = {
+            key:         out.key_id,
+            amount:      out.amount,
+            currency:    out.currency,
+            name:        out.name,
+            description: out.description,
+            order_id:    out.order_id,
+            prefill:     out.prefill,
+            theme:       { color: '#06b6d4' },
+            handler:     (response) => verifyPayment(response, msg),
+            modal: {
+                ondismiss: () => {
+                    msg.textContent = 'Payment cancelled. Submit again when you are ready.';
+                    msg.classList.add('error');
+                },
+            },
+        };
+
+        const rzp = new Razorpay(options);
+        rzp.on('payment.failed', (resp) => {
+            const desc = (resp && resp.error && resp.error.description) || 'unknown error';
+            msg.textContent = 'Payment failed: ' + desc;
+            msg.classList.add('error');
+        });
+        rzp.open();
     } catch (err) {
         msg.textContent = 'Network error. Please check your connection and try again.';
         msg.classList.add('error');
